@@ -35,17 +35,17 @@ jobs:
           echo "$BUCKET_NAME"
       
       - name: configure aws credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        role-to-assume: arn:aws:iam::002680663754:role/github-actions-role
-        role-session-name: github-actions-role
-        aws-region: ${{ env.AWS_REGION }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::002680663754:role/github-actions-role
+          role-session-name: github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Make artifact directory
-      run: mkdir -p ./artifacts
+        run: mkdir -p ./artifacts
 
       # Copy build directory to S3
       - name:  Copy build to S3
-      run: |
-        zip -r ./artifacts/project.zip . -x .git/**\*  
-        aws s3 sync  ${GITHUB_WORKSPACE}/artifacts s3://${{ env.BUCKET_NAME }}/${{ github.event.release.tag_name }}/
+        run: |
+          zip -r ./artifacts/project.zip . -x .git/**\*  
+          aws s3 sync  ${GITHUB_WORKSPACE}/artifacts s3://${{ env.BUCKET_NAME }}/${{ github.event.release.tag_name }}/
