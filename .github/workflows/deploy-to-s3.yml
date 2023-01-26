@@ -7,7 +7,6 @@ on:
 env:
   DEV_BUCKET_NAME : "github-actions-devbucket"
   PROD_BUCKET_NAME : "github-actions-prodbucket"
-  BUCKET_NAME : ${{ startsWith(github.event.release.tag_name, 'release') && env.PROD_BUCKET_NAME || env.DEV_BUCKET_NAME }}
   AWS_REGION : "us-east-1"
 
 jobs:
@@ -20,22 +19,33 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: set proper bucket for dev
+        run: |
+          echo "BUCKET_NAME=${{env.DEV_BUCKET_NAME}}" >> $GITHUB_ENV
+        if:  startsWith(github.event.release.tag_name, 'experiment')
+      
+      - name: set proper bucket for prod
+        run: |
+          echo "BUCKET_NAME=${{env.PROD_BUCKET_NAME}}" >> $GITHUB_ENV
+        if:  startsWith(github.event.release.tag_name, 'release')
+        
+
       - name: Echo Env Vars through Context
         run: |
           echo "$BUCKET_NAME"
       
       - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: arn:aws:iam::002680663754:role/github-actions-role
-          role-session-name: github-actions-role
-          aws-region: ${{ env.AWS_REGION }}
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::002680663754:role/github-actions-role
+        role-session-name: github-actions-role
+        aws-region: ${{ env.AWS_REGION }}
 
       - name: Make artifact directory
-        run: mkdir -p ./artifacts
+      run: mkdir -p ./artifacts
 
       # Copy build directory to S3
       - name:  Copy build to S3
-        run: |
-          zip -r ./artifacts/project.zip . -x .git/**\*  
-          aws s3 sync  ${GITHUB_WORKSPACE}/artifacts s3://${{ env.BUCKET_NAME }}/${{ github.event.release.tag_name }}/
+      run: |
+        zip -r ./artifacts/project.zip . -x .git/**\*  
+        aws s3 sync  ${GITHUB_WORKSPACE}/artifacts s3://${{ env.BUCKET_NAME }}/${{ github.event.release.tag_name }}/
