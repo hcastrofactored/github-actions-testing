@@ -6,7 +6,7 @@ on:
 
 env:
   DEV_BUCKET_NAME : "github-actions-devbucket"
-  PROD_BUCKET_NAME : "github-actions-prodbucket"
+  PROD_BUCKET_NAME : "github-actions-prodbucket-hh"
   AWS_REGION : "us-east-1"
 
 jobs:
@@ -29,7 +29,6 @@ jobs:
           echo "BUCKET_NAME=${{env.PROD_BUCKET_NAME}}" >> $GITHUB_ENV
         if:  startsWith(github.event.release.tag_name, 'release')
         
-
       - name: Echo Env Vars through Context
         run: |
           echo "$BUCKET_NAME"
@@ -38,7 +37,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::002680663754:role/github-actions-role
-          role-session-name: github-actions-role
+          role-session-name: github-actions-role-${{ github.event.release.tag_name }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Make artifact directory
