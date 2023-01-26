@@ -36,8 +36,8 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::002680663754:role/github-actions-role
-          role-session-name: github-actions-role-${{ github.event.release.tag_name }}
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          role-session-name: github-actions-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Make artifact directory
