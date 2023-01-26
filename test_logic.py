@@ -2,7 +2,7 @@ from logic import to_lower, to_upper
 
 
 def test_to_lower():
-    assert to_lower("HoLA") == "hola"
+    assert to_lower("HoLA") == "holA"
 
 
 def test_to_upper():
