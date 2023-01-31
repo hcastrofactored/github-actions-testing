@@ -48,5 +48,5 @@ jobs:
         run: |
           tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
           mv ./artifacts/source.tar.gz .
-          aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{ env.BUCKET_NAME }}/${{ github.repository }}/ --exclude '.git*' --exclude './artifacts/*'
+          aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{ env.BUCKET_NAME }}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
  
