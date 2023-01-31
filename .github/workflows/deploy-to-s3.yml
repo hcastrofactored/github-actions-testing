@@ -40,12 +40,9 @@ jobs:
           role-session-name: github-actions-role
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Make artifact directory
-        run: mkdir -p ./artifacts
-
       # Copy build directory to S3
       - name:  Copy build to S3
         run: |
-          zip -r ./artifacts/project.zip . -x .git/**\*  
-          aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{ env.BUCKET_NAME }}/${{ github.event.release.tag_name }}/ --exclude '.git*'
+          tar --exclude ".git*" -zcvf source.tar.gz .  
+          aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{ env.BUCKET_NAME }}/${{ github.repository }}/ --exclude '.git*'
  
