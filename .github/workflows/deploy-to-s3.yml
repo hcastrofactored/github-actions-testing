@@ -43,6 +43,6 @@ jobs:
       # Copy build directory to S3
       - name:  Copy build to S3
         run: |
-          tar --exclude ".git*" -zcvf source.tar.gz .  
+          tar --exclude ".git*"  --exclude "source.tar.gz" -zcvf source.tar.gz .  
           aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{ env.BUCKET_NAME }}/${{ github.repository }}/ --exclude '.git*'
  
