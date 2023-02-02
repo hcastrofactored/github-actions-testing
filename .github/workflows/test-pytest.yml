@@ -32,10 +32,10 @@ jobs:
         run: |
             pip install pytest
             pip install pytest-cov
-            pytest --cov-report xml:${GITHUB_WORKSPACE}/coverage.xml
+            pytest --cov-report xml:${{ github.workspace }}/coverage.xml
       
       - name: Get Coverage
         uses: orgoro/coverage@v3
         with:
-          coverageFile: ${GITHUB_WORKSPACE}/coverage.xml
+          coverageFile: ${{ github.workspace }}/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
