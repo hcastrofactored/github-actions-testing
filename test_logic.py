@@ -6,4 +6,4 @@ def test_to_lower():
 
 
 def test_to_upper():
-    assert to_upper("HoLa") == "HOLA"
+    assert to_upper("HOLa") == "HOLA"
