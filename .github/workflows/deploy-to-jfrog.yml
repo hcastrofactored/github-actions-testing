@@ -26,7 +26,7 @@ jobs:
         with:
           registry: ${{ secrets.ARTIFACTORY_HOSTNAME }}
           username: ${{ secrets.ARTIFACTORY_GITHUB_ACTIONS_USERNAME }}
-          password: ${{ secrets.ARTIFACTORY_GITHUB_ACTIONS_PASSWORD }
+          password: ${{ secrets.ARTIFACTORY_GITHUB_ACTIONS_PASSWORD }}
       -
         name: Build and push 🐳
         id: docker_build
