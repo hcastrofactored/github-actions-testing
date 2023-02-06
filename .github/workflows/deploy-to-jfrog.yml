@@ -1,12 +1,10 @@
 name: Deploy to JFrog
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
 
-env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: ecr-github-actions-repo
 
 jobs:
   build:
