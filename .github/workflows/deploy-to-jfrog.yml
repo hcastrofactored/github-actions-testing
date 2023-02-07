@@ -34,4 +34,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ github.sha }}
+          tags: h/${{ github.sha }}:latest
