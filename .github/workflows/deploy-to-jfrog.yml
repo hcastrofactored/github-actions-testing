@@ -7,7 +7,6 @@ on:
 
 env:
   JFROG_REPOSITORY: github-action
-  ECR_REPOSITORY: ecr-github-actions-repo
   IMAGE_NAME: server
 
 jobs:
@@ -39,5 +38,5 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/$JFROG_REPOSITORY/$IMAGE_NAME:${{ github.sha }}
+          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.sha }}
           
