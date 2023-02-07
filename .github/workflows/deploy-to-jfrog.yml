@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  JFROG_REPOSITORY: github-action
+  ECR_REPOSITORY: ecr-github-actions-repo
+  IMAGE_NAME: server
 
 jobs:
   build:
@@ -35,5 +39,5 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/github-action/server:${{ github.sha }}
+          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/$JFROG_REPOSITORY/$IMAGE_NAME:${{ github.sha }}
           
