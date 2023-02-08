@@ -24,7 +24,7 @@ jobs:
       with:
         role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
         role-session-name: github-actions-role
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: ${{ vars.AWS_REGION }}
     
     - name: Make artifact directory
       run: mkdir -p ./artifacts
@@ -33,7 +33,7 @@ jobs:
       run: |
         tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
         mv ./artifacts/source.tar.gz .
-        aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{env.BUCKET_NAME}}/${{ github.actor }}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
+        aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{vars.BUCKET_NAME}}/${{ github.actor }}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
   
   prod-deploy:
     name: Prod Deploy
@@ -52,7 +52,7 @@ jobs:
       with:
         role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
         role-session-name: github-actions-role
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: ${{ vars.AWS_REGION }}
     
     - name: Make artifact directory
       run: mkdir -p ./artifacts
@@ -61,4 +61,4 @@ jobs:
       run: |
         tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
         mv ./artifacts/source.tar.gz .
-        aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{env.BUCKET_NAME}}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
+        aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{vars.BUCKET_NAME}}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
