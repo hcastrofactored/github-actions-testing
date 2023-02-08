@@ -43,6 +43,7 @@ jobs:
       id-token: write
       contents: read
     environment: PROD
+    needs: dev-deploy
     steps:
     
     - uses: actions/checkout@v3

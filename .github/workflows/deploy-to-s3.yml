@@ -1,0 +1,63 @@
+name: Build and load to S3
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-repo:
+    runs-on: ubuntu-latest
+    steps:
+      #checking out the repo in the worker, it uses the branch who kicked off the release
+    - uses: actions/checkout@v3
+      
+      # temporary directory to create the comprressed version of repo.
+      # this is necessary to avoid recursively compressing the repo onto itself.
+
+    - name: Make artifact directory
+      run: mkdir -p ./artifacts
+
+      # Build compressed version of repo and deleting the mporary folder
+    - name:  Build compressed repo
+      run: |
+        tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
+        mv ./artifacts/source.tar.gz .
+        rm -r ./artifacts
+    
+    - name: Upload repo and compressed repo version
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-repository
+        path: ${{ github.workspace }}
+  
+  dev-deploy:
+
+    name: Dev Deploy
+    if:  startsWith(github.event.release.tag_name, 'experiment')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: DEV
+    steps:
+      - name: Download build 
+        uses: actions/download-artifact@v3
+        with: 
+          name: my-repository
+
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      
+      - name: List files in the workdir
+        run: |
+          ls .
+
+      - name: Deploy to AWS s3
+        uses: ./.github/composite_actions/s3_load_action
+          with: 
+            aws-access-key-id: ${{ inputs.aws-access-key-id }}
+            aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+            aws-region: ${{ inputs.aws-region }}
+            source-folder: ${GITHUB_WORKSPACE}
+            target-folder: ${{ env.BUCKET_NAME }}/${{ github.event.repository.name }}
