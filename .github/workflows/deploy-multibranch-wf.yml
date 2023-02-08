@@ -1,0 +1,52 @@
+name: Build and load to S3 with multibranch approach
+
+on:
+  release:
+    types: [published]
+
+env:
+  DEV_BUCKET_NAME : "github-actions-devbucket"
+  PROD_BUCKET_NAME : "github-actions-prodbucket-hh"
+  AWS_REGION : "us-east-1"
+
+jobs:
+  build:
+    name: Build repo
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: set proper bucket for dev
+        run: |
+          echo "S3_PATH_TO_WRITE=${{env.DEV_BUCKET_NAME}}/${{ github.actor }}/${{ github.event.repository.name }}" >> $GITHUB_ENV
+        if:  startsWith(github.event.release.tag_name, 'experiment')
+      
+      - name: set proper bucket for prod
+        run: |
+          echo "S3_PATH_TO_WRITE=${{env.PROD_BUCKET_NAME}}/${{ github.event.repository.name }}" >> $GITHUB_ENV
+        if:  startsWith(github.event.release.tag_name, 'release')
+        
+      - name: Echo Env Vars through Context
+        run: |
+          echo "$BUCKET_NAME"
+      
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          role-session-name: github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Make artifact directory
+        run: mkdir -p ./artifacts
+
+      # Copy build directory to S3
+      - name:  Copy build to S3
+        run: |
+          tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
+          mv ./artifacts/source.tar.gz .
+          aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{ env.S3_PATH_TO_WRITE }}/ --exclude '.git*' --exclude './artifacts/*'
+ 
