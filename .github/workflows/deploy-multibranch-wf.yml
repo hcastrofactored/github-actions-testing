@@ -11,6 +11,7 @@ jobs:
     name: Dev Deploy
     if:  startsWith(github.event.release.tag_name, 'experiment')
     runs-on: ubuntu-latest
+    permissions:
       id-token: write
       contents: read
     environment: DEV
@@ -38,6 +39,7 @@ jobs:
     name: Prod Deploy
     if:  startsWith(github.event.release.tag_name, 'release')
     runs-on: ubuntu-latest
+    permissions:
       id-token: write
       contents: read
     environment: PROD
