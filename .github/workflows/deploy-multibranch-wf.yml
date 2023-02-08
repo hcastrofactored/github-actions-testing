@@ -30,10 +30,10 @@ jobs:
       run: mkdir -p ./artifacts
 
     - name:  Copy build to S3
-        run: |
-          tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
-          mv ./artifacts/source.tar.gz .
-          aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{env.BUCKET_NAME}}/${{ github.actor }}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
+      run: |
+        tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
+        mv ./artifacts/source.tar.gz .
+        aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{env.BUCKET_NAME}}/${{ github.actor }}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
   
   prod-deploy:
     name: Prod Deploy
@@ -58,7 +58,7 @@ jobs:
       run: mkdir -p ./artifacts
 
     - name:  Copy build to S3
-        run: |
-          tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
-          mv ./artifacts/source.tar.gz .
-          aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{env.BUCKET_NAME}}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
+      run: |
+        tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
+        mv ./artifacts/source.tar.gz .
+        aws s3 sync  ${GITHUB_WORKSPACE}/ s3://${{env.BUCKET_NAME}}/${{ github.event.repository.name }}/ --exclude '.git*' --exclude './artifacts/*'
