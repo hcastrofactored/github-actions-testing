@@ -55,7 +55,7 @@ jobs:
           ls .
 
       - name: Deploy to AWS s3
-        uses: ./.github/composite_actions/s3_load_action
+        uses: ./.github/deploy-to-s3/
         with: 
           aws-access-key-id: ${{ inputs.aws-access-key-id }}
           aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
