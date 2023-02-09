@@ -14,19 +14,18 @@ inputs:
    target-folder:
      required: true
      description: "path to target s3 folder"
--
 
 runs:
   using: "composite"
   steps:
   
-  - name: configure aws credentials
-    uses: aws-actions/configure-aws-credentials@v1
-    with:
-        # Actions cannot access secrets so pass them in as inputs
-        aws-role-to-assume: ${{ inputs.aws-role-to-assume }}
-        aws-region: ${{ inputs.aws-region }}
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+          # Actions cannot access secrets so pass them in as inputs
+          aws-role-to-assume: ${{ inputs.aws-role-to-assume }}
+          aws-region: ${{ inputs.aws-region }}
 
-  - name: copy to s3
-    run: |
-      aws s3 sync ${{ inputs.source-folder }}/ s3://${{ inputs.target-folder }}/ --exclude '.git*'
+    - name: copy to s3
+      run: |
+        aws s3 sync ${{ inputs.source-folder }}/ s3://${{ inputs.target-folder }}/ --exclude '.git*'
