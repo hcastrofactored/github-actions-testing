@@ -2,12 +2,9 @@ name: 'Load to S3'
 description: 'Syncs a repo folder with a s3 folder'
 
 inputs:
-   aws-access-key-id:
+   aws-role-to-assume:
      required: true
-     description: "The aws-access-key-id used to authenticate with AWS"
-   aws-secret-access-key:
-     required: true
-     description: "The aws-secret-access-key used to authenticate with AWS"
+     description: "The aws-role-to-assume used to authenticate with AWS"
    aws-region: 
       required: true
       description: "The aws-region for s3"
@@ -27,8 +24,7 @@ runs:
     uses: aws-actions/configure-aws-credentials@v1
     with:
         # Actions cannot access secrets so pass them in as inputs
-        aws-access-key-id: ${{ inputs.aws-access-key-id }}
-        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-role-to-assume: ${{ inputs.aws-role-to-assume }}
         aws-region: ${{ inputs.aws-region }}
 
   - name: copy to s3

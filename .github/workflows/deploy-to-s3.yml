@@ -58,8 +58,32 @@ jobs:
       - name: Deploy to AWS s3
         uses: ./.github/actions/deploy-to-s3/
         with: 
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
+          aws-role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.aws-region }}
+          source-folder: ${{ github.workspace }}
+          target-folder: ${{ vars.BUCKET_NAME }}/${{ github.event.repository.name }}
+  
+  prod-deploy:
+    
+    name: Prod Deploy
+    if:  startsWith(github.event.release.tag_name, 'release')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: PROD
+    needs: dev-deploy
+    steps:
+ 
+      - name: Download build 
+        uses: actions/download-artifact@v3
+        with: 
+          name: my-repository
+
+      - name: Deploy to AWS s3
+        uses: ./.github/actions/deploy-to-s3/
+        with: 
+          aws-role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.aws-region }}
           source-folder: ${{ github.workspace }}
           target-folder: ${{ vars.BUCKET_NAME }}/${{ github.event.repository.name }}
