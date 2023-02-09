@@ -48,7 +48,7 @@ jobs:
     if:  startsWith(github.event.release.tag_name, 'release')
     runs-on: ubuntu-latest
     environment: PROD
-    needs: deplloy-dev
+    needs: deploy-dev
 
     steps:
       - name: Checkout
