@@ -68,7 +68,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    environment: DEV
+    environment: ${{ inputs.environment }}
     needs: build-repo
     steps:
       
