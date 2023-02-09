@@ -24,6 +24,7 @@ on:
       environment:
         description: 'This is the environment you running against'
         required: false
+        type: string
         default: 'DEV'
         
     secrets:
