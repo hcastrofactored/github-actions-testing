@@ -73,7 +73,7 @@ jobs:
           name: my-repository
 
       - name: Deploy to AWS s3
-        uses: ./.github/actions/deploy-to-s3/
+        uses: hcastrofactored/github-actions-testing/.github/actions/deploy-to-s3/
         with: 
           aws-role-to-assume: ${{ secrets.aws_role_to_assume }}
           aws-region:  ${{ inputs.aws_region }}
