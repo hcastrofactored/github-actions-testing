@@ -17,10 +17,10 @@ jobs:
     - name: Make artifact directory
       run: mkdir -p ./artifacts
 
-      # Build compressed version of repo and deleting the mporary folder
+      # Build compressed version of repo and deleting the mporary folder  --exclude ".git*"
     - name:  Build compressed repo
       run: |
-        tar --exclude ".git*" -zcvf ./artifacts/source.tar.gz .
+        tar -zcvf ./artifacts/source.tar.gz .
         mv ./artifacts/source.tar.gz .
         rm -r ./artifacts
     
