@@ -23,7 +23,7 @@ runs:
       uses: aws-actions/configure-aws-credentials@v1
       with:
           # Actions cannot access secrets so pass them in as inputs
-          aws-role-to-assume: ${{ inputs.aws-role-to-assume }}
+          role-to-assume: ${{ inputs.aws-role-to-assume }}
           aws-region: ${{ inputs.aws-region }}
 
     - name: copy to s3

@@ -6,24 +6,27 @@ on:
 
 jobs:
   build-repo:
+    
+    #runner
     runs-on: ubuntu-latest
     steps:
-      #checking out the repo in the worker, it uses the branch who kicked off the release
+
+    #checking out the repo in the worker, it uses the branch who kicked off the release
     - uses: actions/checkout@v3
       
-      # temporary directory to create the comprressed version of repo.
-      # this is necessary to avoid recursively compressing the repo onto itself.
-
+    # temporary directory to create the comprressed version of repo.
+    # this is necessary to avoid recursively compressing the repo onto itself.
     - name: Make artifact directory
       run: mkdir -p ./artifacts
 
-      # Build compressed version of repo and deleting the mporary folder  --exclude ".git*"
+    # Build compressed version of repo and deleting the mporary folder  --exclude ".git*"
     - name:  Build compressed repo
       run: |
         tar -zcvf ./artifacts/source.tar.gz .
         mv ./artifacts/source.tar.gz .
         rm -r ./artifacts
     
+    # Upload artifact to it is ready for use either by dev or prod workflows.
     - name: Upload repo and compressed repo version
       uses: actions/upload-artifact@v3
       with:
@@ -46,20 +49,12 @@ jobs:
         uses: actions/download-artifact@v3
         with: 
           name: my-repository
-      
-      - name: List files in the repository
-        run: |
-          ls -la ${{ github.workspace }}
-      
-      - name: List files in the workdir
-        run: |
-          ls -la .
 
       - name: Deploy to AWS s3
         uses: ./.github/actions/deploy-to-s3/
         with: 
           aws-role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.aws-region }}
+          aws-region:  ${{ vars.AWS_REGION }}
           source-folder: ${{ github.workspace }}
           target-folder: ${{ vars.BUCKET_NAME }}/${{ github.event.repository.name }}
   
@@ -72,7 +67,7 @@ jobs:
       id-token: write
       contents: read
     environment: PROD
-    needs: dev-deploy
+    needs: build-repo
     steps:
  
       - name: Download build 
@@ -84,6 +79,6 @@ jobs:
         uses: ./.github/actions/deploy-to-s3/
         with: 
           aws-role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.aws-region }}
+          aws-region: ${{ vars.AWS_REGION }}
           source-folder: ${{ github.workspace }}
           target-folder: ${{ vars.BUCKET_NAME }}/${{ github.event.repository.name }}
