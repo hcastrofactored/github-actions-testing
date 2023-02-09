@@ -1,0 +1,78 @@
+name: Deploy to JFrog
+
+on:
+  release:
+    types: [published]
+
+env:
+  JFROG_REPOSITORY: github-action
+  IMAGE_NAME: server
+  DOCKERFILE_PATH: ./Dockerfile
+
+jobs:
+  
+  deploy-dev:
+    name: Dev Deploy
+    if:  startsWith(github.event.release.tag_name, 'experiment')
+    runs-on: ubuntu-latest
+    environment: DEV
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      -
+        name: Set up QEMU 🏗️
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx 🐋
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to JFrog 🐸  
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ARTIFACTORY_HOSTNAME }}
+          username: ${{ secrets.ARTIFACTORY_GITHUB_ACTIONS_USERNAME }}
+          password: ${{ secrets.ARTIFACTORY_GITHUB_ACTIONS_PASSWORD }}
+      -
+        name: Build and push 🐳
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ${{env.DOCKERFILE_PATH}}
+          push: true
+          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.sha }}
+          
+  deploy-prd:
+    name: Prod Deploy
+    if:  startsWith(github.event.release.tag_name, 'release')
+    runs-on: ubuntu-latest
+    environment: PROD
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      -
+        name: Set up QEMU 🏗️
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx 🐋
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to JFrog 🐸  
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ARTIFACTORY_HOSTNAME }}
+          username: ${{ secrets.ARTIFACTORY_GITHUB_ACTIONS_USERNAME }}
+          password: ${{ secrets.ARTIFACTORY_GITHUB_ACTIONS_PASSWORD }}
+      -
+        name: Build and push 🐳
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ${{env.DOCKERFILE_PATH}}
+          push: true
+          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.sha }}
