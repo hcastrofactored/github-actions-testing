@@ -42,19 +42,21 @@ jobs:
     needs: build-repo
     steps:
       
-      - uses: actions/checkout@v3
+      - name: Download build 
+        uses: actions/download-artifact@v3
+        with: 
+          name: my-repository
       
       - name: List files in the repository
         run: |
-          ls ${{ github.workspace }}
+          ls -la ${{ github.workspace }}
       
       - name: List files in the workdir
         run: |
           ls -la .
 
-
       - name: Deploy to AWS s3
-        uses: ./.github/deploy-to-s3/
+        uses: ./.github/actions/deploy-to-s3/
         with: 
           aws-access-key-id: ${{ inputs.aws-access-key-id }}
           aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
