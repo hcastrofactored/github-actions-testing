@@ -66,10 +66,10 @@ jobs:
     environment: DEV
     needs: build-repo
     steps:
-      - name: Download reusable repo
-        uses: actions/checkout@v3
-          with:
-            repository: hcastrofactored/github-actions-testing
+      
+      - uses: actions/checkout@v3
+        with:
+          repository: hcastrofactored/github-actions-testing
 
       - name: Download build 
         uses: actions/download-artifact@v3
@@ -96,11 +96,10 @@ jobs:
     environment: PROD
     needs: build-repo
     steps:
-
-       - name: Download reusable repo
-         uses: actions/checkout@v3
-          with:
-            repository: hcastrofactored/github-actions-testing
+      
+      - uses: actions/checkout@v3
+        with:
+          repository: hcastrofactored/github-actions-testing
 
       - name: Download build 
         uses: actions/download-artifact@v3
