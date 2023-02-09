@@ -52,10 +52,10 @@ jobs:
       
       - name: List files in the workdir
         run: |
-          ls .
+          ls -la .
 
       - name: Deploy to AWS s3
-        uses: ./.github/deploy-to-s3/
+        uses: ./.github/deploy-to-s3/action.yml
         with: 
           aws-access-key-id: ${{ inputs.aws-access-key-id }}
           aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
