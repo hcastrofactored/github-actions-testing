@@ -11,8 +11,11 @@ on:
         description: 'Bucket name [and path] where release is being deployed.'
         required: true
         type: string     
+    secrets:
+      aws_role_to_assume:
+        required: true
+      
 
-    
 jobs:
   build-repo:
     
