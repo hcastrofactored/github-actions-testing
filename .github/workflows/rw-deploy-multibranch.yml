@@ -10,7 +10,12 @@ on:
       s3_path:
         description: 'Bucket name [and path] where release is being deployed.'
         required: true
-        type: string     
+        type: string
+      environment:
+        description: 'Github Action Environment'
+        required: false
+        type: string
+        default: 'DEV' 
     secrets:
       aws_role_to_assume:
         required: true
@@ -53,6 +58,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    environment:  ${{ inputs.environment }}
     needs: build-repo
     steps:
       
