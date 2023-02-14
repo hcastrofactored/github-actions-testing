@@ -7,26 +7,10 @@ on:
         description: 's3 aws region'
         required: true
         type: string
-      bucket_name:
+      s3_path:
         description: 'Bucket name [and path] where release is being deployed.'
         required: true
-        type: string
-      dev_trigger_prefix:
-        description: 'This is the prefix tag to identify a release as a Dev release.'
-        required: false
-        type: string
-        default: 'experiment'
-      prod_trigger_prefix:
-        description: 'This is the prefix tag to identify a release as a Prod release.'
-        required: false
-        type: string
-        default: 'release'
-      environment:
-        description: 'This is the environment you running against'
-        required: false
-        type: string
-        default: 'DEV'
-        
+        type: string     
     secrets:
       aws_role_to_assume:
         required: true
@@ -61,15 +45,14 @@ jobs:
         name: my-repository
         path: ${{ github.workspace }}
   
-  dev-deploy:
+  deploy:
 
-    name: Dev Deploy
+    name: Deploy
     if:  startsWith(github.event.release.tag_name, ${{ inputs.dev_trigger_prefix }})
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-    environment: ${{ inputs.environment }}
     needs: build-repo
     steps:
       
@@ -88,35 +71,7 @@ jobs:
         with: 
           aws-role-to-assume: ${{ secrets.aws_role_to_assume }}
           aws-region:  ${{ inputs.aws_region }}
-          source-folder: ${{ github.workspace }}/my-repository/
+          source-folder: ${{ github.workspace }}/my-repository
           target-folder: ${{ inputs.bucket_name }}/${{ github.actor }}/${{ github.event.repository.name }}
   
-  prod-deploy:
-    
-    name: Prod Deploy
-    if:  startsWith(github.event.release.tag_name, ${{ inputs.prod_trigger_prefix }})
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    environment: PROD
-    needs: build-repo
-    steps:
-      
-      - uses: actions/checkout@v3
-        with:
-          repository: hcastrofactored/github-actions-testing
-
-      - name: Download build 
-        uses: actions/download-artifact@v3
-        with: 
-          name: my-repository
-          path: my-repository
-
-      - name: Deploy to AWS s3
-        uses: ./.github/actions/deploy-to-s3/
-        with: 
-          aws-role-to-assume: ${{ secrets.aws_role_to_assume }}
-          aws-region: ${{ inputs.aws_region }}
-          source-folder: ${{ github.workspace }}/my-repository/
-          target-folder: ${{ inputs.bucket_name }}/${{ github.event.repository.name }}
+   
