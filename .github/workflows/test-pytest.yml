@@ -30,6 +30,7 @@ jobs:
         id: flake8
         run: |
           flake8
+        continue-on-error: true
 
       - name: comment PR
         uses: unsplash/comment-on-pr@v1.3.0
