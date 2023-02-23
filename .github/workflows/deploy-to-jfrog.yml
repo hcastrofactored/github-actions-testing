@@ -42,7 +42,7 @@ jobs:
           context: ./
           file: ${{env.DOCKERFILE_PATH}}
           push: true
-          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.sha }}
+          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.actor }}-${{ github.event.release.tag_name }}
           
   deploy-prd:
     name: Prod Deploy
@@ -75,4 +75,4 @@ jobs:
           context: ./
           file: ${{env.DOCKERFILE_PATH}}
           push: true
-          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.sha }}
+          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.actor }}-${{ github.event.release.tag_name }}

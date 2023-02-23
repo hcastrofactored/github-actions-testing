@@ -63,7 +63,7 @@ jobs:
       # BUCKET_NAME is a variable that you should have previously defined in your Github DEV environment.
       - name: copy to s3
         shell: bash
-        run: aws s3 sync ${{ github.workspace }} ${{ vars.BUCKET_NAME }}/${{ github.event.repository.name }} --exclude '.git*'
+        run: aws s3 sync ${{ github.workspace }} s3://${{ vars.BUCKET_NAME }}/${{ github.event.repository.name }}/ --exclude '.git*'
   
   prod-deploy:
     
