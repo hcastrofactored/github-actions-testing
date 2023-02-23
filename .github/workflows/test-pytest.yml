@@ -43,7 +43,9 @@ jobs:
         continue-on-error: true
 
       - name: PR comment with file
-        if: always()
+        if: failure()
+        env:
+          CONTINUE_ON_ERROR: ${{ job.status != 'failure' }}
         uses: thollander/actions-comment-pull-request@v2
         with:
           filePath: result_flake.txt
