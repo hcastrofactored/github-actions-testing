@@ -1,0 +1,97 @@
+name: Build and load to S3
+
+# specify the event that kicks off the action, so whenever there is a published release on the repo, this action will start.
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-repo:
+    
+    #runner
+    runs-on: ubuntu-latest
+    steps:
+
+    #checking out the repo in the worker, it uses the branch who kicked off the release
+    - uses: actions/checkout@v3
+      
+    # temporary directory to create the comprresed version of repo.
+    # this is necessary to avoid recursively compressing the repo onto itself.
+    - name: Make artifact directory
+      run: mkdir -p ./artifacts
+
+    # Build compressed version of repo and deleting the mporary folder  --exclude ".git*"
+    - name:  Build compressed repo
+      run: |
+        tar -zcvf ./artifacts/source.tar.gz .
+        mv ./artifacts/source.tar.gz .
+        rm -r ./artifacts
+    
+    # Upload artifact to a staging space under the name "my-repository"
+    # so the zip is ready for uplouad either by dev or prod workflows.
+    - name: Upload repo and compressed repo version
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-repository
+        path: ${{ github.workspace }}
+  
+  dev-deploy:
+
+    name: Dev Deploy
+    # condition that distinguish dev from prod environment, feel free to change it
+    if:  startsWith(github.event.release.tag_name, 'experiment')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: DEV
+    needs: build-repo
+    steps:
+      # downloads the build that was previously staged
+      - name: Download build 
+        uses: actions/download-artifact@v3
+        with: 
+          name: my-repository
+      
+      # ROLE_TO_ASSUME is a secret previously defined at the DEV environment level.
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # BUCKET_NAME is a variable that you should have previously defined in your Github DEV environment.
+      - name: copy to s3
+        shell: bash
+        run: aws s3 sync ${{ github.workspace }} ${{ vars.BUCKET_NAME }}/${{ github.event.repository.name }} --exclude '.git*'
+  
+  prod-deploy:
+    
+    name: Prod Deploy
+    # condition that distinguish dev from prod environment, feel free to change it
+    if:  startsWith(github.event.release.tag_name, 'release')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: PROD
+    needs: build-repo
+    steps:
+ 
+      - name: Download build 
+        uses: actions/download-artifact@v3
+        with: 
+          name: my-repository
+
+      # ROLE_TO_ASSUME is a secret previously defined at the DEV environment level.
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # BUCKET_NAME is a variable that you should have previously defined in your Github DEV environment.
+      - name: copy to s3
+        shell: bash
+        run: aws s3 sync ${{ github.workspace }} ${{vars.BUCKET_NAME}}/${{ github.actor }}/${{ github.event.repository.name }} --exclude '.git*'
+  
