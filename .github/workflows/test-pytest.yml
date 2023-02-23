@@ -26,31 +26,18 @@ jobs:
           pip install flake8 pytest pytest-cov
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run flake8
+      - name: Run Flake8
         id: flake8
         run: |
-          flake8 --max-line-length 120 .
+          flake8
 
-      - name: Comment on pull request
-        uses: actions/github-script@v4
-        if: always()
+      - name: Comment on PR
+        uses: unsplash/comment-on-pr@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `<details><summary>Flake8 Output</summary>
-
-            \`\`\`
-            ${JSON.stringify({annotations: context.payload.pull_request.head.sha, annotations_count: context.payload.check_run.annotations_count}, null, 2)}
-            \`\`\`
-
-            </details>`;
-
-            github.issues.createComment({
-              issue_number: context.payload.pull_request.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
+          message: |
+            ```
+            ${{ steps.flake8.outputs.stdout }}
+            ```
 
       - name: Build coverage file
         run: |
