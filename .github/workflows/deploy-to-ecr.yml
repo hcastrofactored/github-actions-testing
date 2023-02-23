@@ -35,7 +35,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.actor }}-${{ github.event.release.tag_name }}
+          IMAGE_TAG: ${{ github.actor }}
         run: |
           # Build a docker container and push it to ECR so that it can be deployed to ECS if needed.
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .

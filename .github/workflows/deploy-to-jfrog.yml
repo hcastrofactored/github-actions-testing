@@ -42,7 +42,7 @@ jobs:
           context: ./
           file: ${{env.DOCKERFILE_PATH}}
           push: true
-          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.actor }}-${{ github.event.release.tag_name }}
+          tags: ${{ secrets.ARTIFACTORY_HOSTNAME }}/${{env.JFROG_REPOSITORY}}/${{env.IMAGE_NAME}}:${{ github.actor }}
           
   deploy-prd:
     name: Prod Deploy
