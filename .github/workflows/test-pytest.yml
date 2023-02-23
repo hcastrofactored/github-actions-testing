@@ -6,7 +6,7 @@ on:
       - main 
 
 jobs: 
-  build: 
+  test: 
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -26,21 +26,6 @@ jobs:
           pip install flake8 pytest pytest-cov
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Flake8
-        id: flake8
-        run: |
-          flake8
-        continue-on-error: true
-
-      - name: comment PR
-        uses: unsplash/comment-on-pr@v1.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          message: |
-            ```
-            ${{ steps.flake8.outputs.stdout }}
-            ```
       - name: Build coverage file
         run: |
           pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=src tests/ | tee pytest-coverage.txt
@@ -50,3 +35,20 @@ jobs:
         with:
           pytest-coverage-path: ./pytest-coverage.txt
           junitxml-path: ./pytest.xml
+
+      - name: Run Flake8
+        id: flake8
+        run: |
+          flake8
+        continue-on-error: true
+
+      - name: comment PR
+        if: always()
+        uses: unsplash/comment-on-pr@v1.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          message: |
+            ```
+            ${{ steps.flake8.outputs.stdout }}
+            ```
