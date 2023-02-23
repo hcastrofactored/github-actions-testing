@@ -39,16 +39,12 @@ jobs:
       - name: Run Flake8
         id: flake8
         run: |
-          flake8
+          flake8 . > result_flake.txt
         continue-on-error: true
 
-      - name: comment PR
+      - name: PR comment with file
         if: always()
-        uses: unsplash/comment-on-pr@v1.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: thollander/actions-comment-pull-request@v2
         with:
-          message: |
-            ```
-            ${{ steps.flake8.outputs.stdout }}
-            ```
+          filePath: result_flake.txt
+ 
