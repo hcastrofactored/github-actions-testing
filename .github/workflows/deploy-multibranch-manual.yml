@@ -1,4 +1,4 @@
-name: [Manual ]Build and load to S3 with multibranch approach
+name: Manual Build to S3 with multibranch approach
 
 on:
   workflow_dispatch:
