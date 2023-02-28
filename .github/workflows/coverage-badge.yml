@@ -1,8 +1,6 @@
-name: Unit tests
+name: Coverage Badge
 
-on:
-  push:
-    branches: ["main"]
+on: workflow_dispatch
 
 jobs:
   build:

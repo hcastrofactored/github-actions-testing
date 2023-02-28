@@ -1,0 +1,65 @@
+name: Build and load to S3 with multibranch approach
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'branch that needs to be deployed'
+        required: true
+        default: 'main'
+        type: string
+ 
+jobs:
+  build-repo:
+    
+    #runner
+    runs-on: ubuntu-latest
+    steps:
+
+    #checking out the repo in the worker, it uses the branch who kicked off the release
+    - uses: actions/checkout@v3
+      
+    # temporary directory to create the comprressed version of repo.
+    # this is necessary to avoid recursively compressing the repo onto itself.
+    - name: Make artifact directory
+      run: mkdir -p ./artifacts
+
+    # Build compressed version of repo and deleting the mporary folder  --exclude ".git*"
+    - name:  Build compressed repo
+      run: |
+        tar -zcvf ./artifacts/source.tar.gz .
+        mv ./artifacts/source.tar.gz .
+        rm -r ./artifacts
+    
+    # Upload artifact to it is ready for use either by dev or prod workflows.
+    - name: Upload repo and compressed repo version
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-repository
+        path: ${{ github.workspace }}
+  
+  dev-deploy:
+
+    name: Dev Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: DEV
+    needs: build-repo
+    steps:
+      
+      - name: Download build 
+        uses: actions/download-artifact@v3
+        with: 
+          name: my-repository
+
+      - name: Deploy to AWS s3
+        uses: ./.github/actions/deploy-to-s3/
+        with: 
+          aws-role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          aws-region:  ${{ vars.AWS_REGION }}
+          source-folder: ${{ github.workspace }}
+          target-folder: ${{vars.BUCKET_NAME}}/${{ github.actor }}/${{ github.event.repository.name }}/${{ inputs.branch_name }} 
+  
+   
