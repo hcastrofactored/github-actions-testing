@@ -1,14 +1,7 @@
 name: Manual Build to S3 with multibranch approach
 
-on:
-  workflow_dispatch:
-    inputs:
-      branch_name:
-        description: 'branch that needs to be deployed'
-        required: true
-        default: 'main'
-        type: string
- 
+on: workflow_dispatch
+
 jobs:
   build-repo:
     
@@ -64,6 +57,6 @@ jobs:
           aws-role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
           aws-region:  ${{ vars.AWS_REGION }}
           source-folder: ${{ github.workspace }}
-          target-folder: ${{vars.BUCKET_NAME}}/${{ env.username }}/${{ github.event.repository.name }}/
+          target-folder: ${{vars.BUCKET_NAME}}/${{ env.username }}/${{ github.event.repository.name }}
   
    
