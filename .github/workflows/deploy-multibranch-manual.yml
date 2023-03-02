@@ -42,7 +42,7 @@ jobs:
 
       - name: Get User
         run: |
-          echo "username=$(echo "${{ github.ref }}"  | cut -d'-' -f2)" >> $GITHUB_ENV
+          echo "username=$(echo ${{ github.ref }}  | cut -d'-' -f2)" >> $GITHUB_ENV
 
       - name: Download build 
         uses: actions/download-artifact@v3
@@ -55,6 +55,6 @@ jobs:
           aws-role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
           aws-region:  ${{ vars.AWS_REGION }}
           source-folder: ${{ github.workspace }}
-          target-folder: ${{vars.BUCKET_NAME}}/${{ env.username }}/${{ github.event.repository.name }}/
+          target-folder: ${{vars.BUCKET_NAME}}/${{ env.username }}/${{ github.event.repository.name }}
   
    
