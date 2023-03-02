@@ -1,14 +1,5 @@
 name: Manual Build to S3 with multibranch approach
 
-on:
-  workflow_dispatch:
-    inputs:
-      branch_name:
-        description: 'branch that needs to be deployed'
-        required: true
-        default: 'main'
-        type: string
- 
 jobs:
   build-repo:
     
@@ -51,7 +42,7 @@ jobs:
 
       - name: Get User
         run: |
-          echo "username=$(echo ${{ github.ref }}  | cut -d'-' -f2)" >> $GITHUB_ENV
+          echo "username=$(echo "${{ github.ref }}"  | cut -d'-' -f2)" >> $GITHUB_ENV
 
       - name: Download build 
         uses: actions/download-artifact@v3
