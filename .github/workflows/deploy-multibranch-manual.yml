@@ -1,5 +1,7 @@
 name: Manual Build to S3 with multibranch approach
 
+on: workflow_dispatch
+
 jobs:
   build-repo:
     
