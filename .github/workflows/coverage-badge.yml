@@ -11,6 +11,11 @@ jobs:
   build:
     name: Run Python Tests
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      id-token: write
+
     steps:
       - uses: actions/checkout@v3
 
