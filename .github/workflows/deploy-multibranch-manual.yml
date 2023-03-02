@@ -43,14 +43,20 @@ jobs:
     steps:
 
       - name: Get User
+        # It gets the user 
+        # We are using the following branch name convention " feature-<username>-*"
+        # So the `cut` command creates from the branch the following array ["feature", "<username>", "*"]
+        # and with the -f2 argument we pick the one in the middle
         run: |
           echo "username=$(echo ${{ github.ref }}  | cut -d'-' -f2)" >> $GITHUB_ENV
 
+        # We download the previously built artifact to this runner.
       - name: Download build 
         uses: actions/download-artifact@v3
         with: 
           name: my-repository
-
+        
+        # We deploy the folder with the repo and the compressed version of the repo to the S3 bucket.
       - name: Deploy to AWS s3
         uses: ./.github/actions/deploy-to-s3/
         with: 
