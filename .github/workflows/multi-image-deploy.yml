@@ -39,7 +39,8 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          git diff --name-only HEAD^ HEAD | grep Dockerfile > dockerfiles.txt
+          
+          git diff --name-only HEAD^ HEAD | xargs -0 dirname | sort -u | grep Dockerfile > dockerfiles.txt
 
           cat dockerfiles.txt
 
