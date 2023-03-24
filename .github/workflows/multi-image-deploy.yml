@@ -19,6 +19,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -40,13 +42,13 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           
-          git diff --name-only HEAD^ HEAD | xargs -0 dirname | sort -u | grep Dockerfile > dockerfiles.txt
+          git diff --name-only HEAD^ HEAD | xargs -0 dirname | sort -u | grep docker-images  > dockerfiles.txt
 
           cat dockerfiles.txt
 
           for dockerfile in $(cat dockerfiles.txt); do
 
-            IMAGE_NAME=$(echo $dockerfile | awk -F "/" '{print $(NF-1)}')
+            IMAGE_NAME=$(echo $dockerfile | awk -F "/" '{print $(NF)}')
 
             echo $IMAGE_NAME 
 
@@ -63,7 +65,7 @@ jobs:
               
             fi
 
-            docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile $(dirname "$dockerfile")
+            docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest $dockerfile
             docker push $ECR_REGISTRY/$IMAGE_NAME:latest
             docker push $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG
 
