@@ -50,7 +50,7 @@ jobs:
 
             if (aws ecr describe-images --repository-name=$IMAGE_NAME  2> /dev/null); then
 
-              LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[? !contains(imageTags, `latest`)].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
+              LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[? starts_with(imageTags[0], `v`)].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}'
 
               NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
               
