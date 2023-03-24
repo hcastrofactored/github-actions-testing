@@ -31,6 +31,8 @@ jobs:
         # dockerfiles=$(git diff --name-only HEAD^ HEAD | grep Dockerfile)
       - name: Get Dockerfile changes, tag and push images
         id: dockerfile-changes
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           find docker-images | grep Dockerfile > dockerfiles.txt
 
@@ -48,8 +50,8 @@ jobs:
 
               NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
 
-              docker build -t $ECR_REPOSITORY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
-              docker push $ECR_REPOSITORY/$IMAGE_NAME --all-tags
+              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest $dockerfile
+              docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
               
             else
 
@@ -57,11 +59,11 @@ jobs:
               
               echo $NEW_TAG
 
-              docker build -t $ECR_REPOSITORY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
+              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest $dockerfile
 
               echo "BUILT"
 
-              docker push $ECR_REPOSITORY/$IMAGE_NAME --all-tags
+              docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
 
               echo "PUSHED"
             fi
