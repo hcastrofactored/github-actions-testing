@@ -1,0 +1,61 @@
+name: Deploy Multiple Dockerfile to ECR
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker-images/**'
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY:  ${{ secrets.ECR_REPOSITORY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+        #TODO: 2 loops since base images need to run first.
+        # Just modified dockerfiles 
+        # dockerfiles=$(git diff --name-only HEAD^ HEAD | grep Dockerfile)
+      - name: Get Dockerfile changes, tag and push images
+        id: dockerfile-changes
+        run: |
+          find docker-images | grep Dockerfile > dockerfiles.txt
+          
+          for dockerfile in $(cat dockerfiles.txt); do
+
+            IMAGE_NAME=$(echo $dockerfile | awk -F "/" '{print $(NF-1)}')
+
+            IMAGE_META=$(aws ecr describe-images --repository-name=$IMAGE_NAME 2> /dev/null)
+            
+            if [[ $? == 0 ]]; then
+              
+              LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
+              
+              NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
+
+              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
+              docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
+              
+            else
+
+              NEW_TAG=v0.1
+              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
+              docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
+          
+            fi
+
+          done
