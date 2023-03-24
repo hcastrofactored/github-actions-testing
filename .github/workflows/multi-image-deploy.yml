@@ -13,7 +13,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env: DEV
+    environment: DEV
     steps:
 
       - name: Checkout code
