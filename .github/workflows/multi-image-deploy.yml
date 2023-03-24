@@ -34,11 +34,17 @@ jobs:
         run: |
           find docker-images | grep Dockerfile > dockerfiles.txt
 
+          cat dockerfiles.txt
+
           for dockerfile in $(cat dockerfiles.txt); do
-          
+
             IMAGE_NAME=$(echo $dockerfile | awk -F "/" '{print $(NF-1)}')
 
+            echo $IMAGE_NAME 
+            
             IMAGE_META=$(aws ecr describe-images --repository-name=$IMAGE_NAME 2> /dev/null)
+            
+            echo $?
 
             if [[ $? == 0 ]]; then
 
@@ -52,9 +58,16 @@ jobs:
             else
 
               NEW_TAG=v0.1
+              
+              echo $NEW_TAG
+
               docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
+
+              echo "BUILT"
+
               docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
-          
+
+              echo "PUSHED"
             fi
 
           done
