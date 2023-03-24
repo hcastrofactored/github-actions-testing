@@ -63,7 +63,7 @@ jobs:
               
               echo $NEW_TAG
 
-              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile
+              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile $(dirname "$dockerfile")
 
               echo "BUILT"
 
