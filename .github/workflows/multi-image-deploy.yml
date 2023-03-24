@@ -50,29 +50,19 @@ jobs:
 
             if (aws ecr describe-images --repository-name=$IMAGE_NAME  2> /dev/null); then
 
-              LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
+              LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[? !contains(imageTags, `latest`)].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
 
               NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
-
-              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile $(dirname "$dockerfile")
-              docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
               
             else
 
+              aws ecr create-repository --repository-name $IMAGE_NAME
               NEW_TAG=v0.1
               
-              echo $NEW_TAG
-
-              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile $(dirname "$dockerfile")
-
-              echo "BUILT"
-             
-              aws ecr create-repository --repository-name $IMAGE_NAME
-
-              docker push $ECR_REGISTRY/$IMAGE_NAME:latest
-              docker push $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG
-
-              echo "PUSHED"
             fi
+
+            docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile $(dirname "$dockerfile")
+            docker push $ECR_REGISTRY/$IMAGE_NAME:latest
+            docker push $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG
 
           done
