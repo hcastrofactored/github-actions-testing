@@ -54,7 +54,7 @@ jobs:
 
               NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
 
-              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest $dockerfile
+              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile
               docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
               
             else
@@ -63,7 +63,7 @@ jobs:
               
               echo $NEW_TAG
 
-              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest $dockerfile
+              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest -f $dockerfile
 
               echo "BUILT"
 
