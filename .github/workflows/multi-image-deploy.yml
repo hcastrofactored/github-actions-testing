@@ -26,6 +26,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
         #TODO: 2 loops since base images need to run first.
         # Just modified dockerfiles 
         # dockerfiles=$(git diff --name-only HEAD^ HEAD | grep Dockerfile)
