@@ -41,12 +41,8 @@ jobs:
             IMAGE_NAME=$(echo $dockerfile | awk -F "/" '{print $(NF-1)}')
 
             echo $IMAGE_NAME 
-            
-            IMAGE_META=$(aws ecr describe-images --repository-name=$IMAGE_NAME 2> /dev/null)
-            
-            echo $?
 
-            if [[ $? == 0 ]]; then
+            if aws ecr describe-images --repository-name=$IMAGE_NAME; then
 
               LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
 
