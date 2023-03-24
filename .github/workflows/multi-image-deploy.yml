@@ -42,14 +42,18 @@ jobs:
 
             echo $IMAGE_NAME 
 
-            if aws ecr describe-images --repository-name=$IMAGE_NAME; then
+            IMAGE_META=$(aws ecr describe-images --repository-name=$IMAGE_NAME 2> /dev/null)
+            
+            echo $?
+
+            if (aws ecr describe-images --repository-name=$IMAGE_NAME  2> /dev/null); then
 
               LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
 
               NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
 
-              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
-              docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
+              docker build -t $ECR_REPOSITORY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
+              docker push $ECR_REPOSITORY/$IMAGE_NAME --all-tags
               
             else
 
@@ -57,11 +61,11 @@ jobs:
               
               echo $NEW_TAG
 
-              docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
+              docker build -t $ECR_REPOSITORY/$IMAGE_NAME:$NEW_TAG -t latest $dockerfile
 
               echo "BUILT"
 
-              docker push $ECR_REGISTRY/$IMAGE_NAME --all-tags
+              docker push $ECR_REPOSITORY/$IMAGE_NAME --all-tags
 
               echo "PUSHED"
             fi
