@@ -67,7 +67,7 @@ jobs:
               
             fi
 
-            docker buildx build --push -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest \
+            docker buildx build --push -t "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG" -t "$ECR_REGISTRY/$IMAGE_NAME:latest" \
             --cache-to type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME \
             --cache-from type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME $dockerfile
           done
