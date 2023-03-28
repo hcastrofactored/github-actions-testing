@@ -1,9 +1,6 @@
 name: Matrix with multiple variables
 
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch 
 
 jobs:
 
