@@ -77,7 +77,7 @@ jobs:
             --cache-from type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME $dockerfile
 
             # Push the Docker image to the registry
-            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG"
             docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:latest"
+            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG"
 
           done
