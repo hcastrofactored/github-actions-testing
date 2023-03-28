@@ -72,12 +72,12 @@ jobs:
             echo $IMAGE_NAME 
             echo $NEW_TAG 
 
-            docker buildx build -t "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG" -t "$ECR_REGISTRY/$IMAGE_NAME:latest" \
+            docker buildx build --push -t "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG" -t "$ECR_REGISTRY/$IMAGE_NAME:latest" \
             --cache-to type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME \
             --cache-from type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME $dockerfile
 
             # Push the Docker image to the registry
-            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:latest"
             docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG"
+            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:latest"
 
           done
