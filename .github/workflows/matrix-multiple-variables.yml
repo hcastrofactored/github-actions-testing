@@ -1,43 +1,18 @@
-name: Matrix with multiple variables
-
-on: workflow_dispatch 
-
+name: build
+on: push
 jobs:
-
-  get_matrix:
+  job1:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.parse_matrix.outputs.matrix }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Parse matrix file
-        id: parse_matrix
-        run: |
-          matrix=()
-          while IFS= read -r line; do
-            matrix+=("$line")
-          done < matrix.txt
-          matrix_output=""
-          for m in "${matrix[@]}"; do
-            matrix_output+=$(printf ",%s" "$m")
-          done
-          echo "::set-output name=matrix::${matrix_output:1}"
-  
-  build:
-    needs: get_matrix
-    runs-on: ${{ matrix.os }}
+    - id: set-matrix
+      run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
+  job2:
+    needs: job1
+    runs-on: ubuntu-latest
     strategy:
-      matrix:
-        os: ${{ needs.get_matrix.outputs.matrix.os }}
-        language: ${{ needs.get_matrix.outputs.matrix.language }}
- 
+      matrix: ${{fromJson(needs.job1.outputs.matrix)}}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Build on ${{ matrix.os }} with ${{ matrix.language }} version ${{ matrix.version }}
-        run: echo "Building on ${{ matrix.os }} with ${{ matrix.language }} version ${{ matrix.version }}"
-
-      # additional steps...
+    - run: echo ${{ matrix.project }}
+    - run: echo ${{ matrix.config }}
