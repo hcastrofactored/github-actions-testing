@@ -1,6 +1,5 @@
 name: Deploy Multiple Dockerfile to ECR
 
-
 on:
   push:
     branches:
@@ -41,24 +40,18 @@ jobs:
         run: |
           
           git diff --name-only HEAD^ HEAD | xargs -0 dirname | sort -u | grep docker-images  > dockerfiles.txt
-          
-          docker buildx create --use --driver=docker-container
-          export ACTIONS_CACHE_URL=$(echo "$ACTIONS_ID_TOKEN_REQUEST_URL" | grep -Po 'https://[^/]+/[^/]+/' | sed  's/pipelines/artifactcache/')
-          export ACTIONS_RUNTIME_TOKEN=$ACTIONS_ID_TOKEN_REQUEST_TOKEN
 
-          cat dockerfiles.txt 
+          cat dockerfiles.txt
 
           for dockerfile in $(cat dockerfiles.txt); do
 
-            echo $dockerfile 
-
             IMAGE_NAME=$(echo $dockerfile | awk -F "/" '{print $(NF)}')
+
+            echo $IMAGE_NAME 
 
             if (aws ecr describe-images --repository-name=$IMAGE_NAME  2> /dev/null); then
 
               LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[? starts_with(imageTags[0], `v`)].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
-
-              echo $LAST_TAG
 
               NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
               
@@ -69,15 +62,8 @@ jobs:
               
             fi
 
-            echo $IMAGE_NAME 
-            echo $NEW_TAG 
-
-            docker buildx build --push -t "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG" -t "$ECR_REGISTRY/$IMAGE_NAME:latest" \
-            --cache-to type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME \
-            --cache-from type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME $dockerfile
-
-            # Push the Docker image to the registry
-            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG"
-            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:latest"
+            docker build -t $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG -t $ECR_REGISTRY/$IMAGE_NAME:latest $dockerfile
+            docker push $ECR_REGISTRY/$IMAGE_NAME:latest
+            docker push $ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG
 
           done
