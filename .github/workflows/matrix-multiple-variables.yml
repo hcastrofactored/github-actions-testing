@@ -1,0 +1,36 @@
+name: Matrix with multiple variables
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ steps.get_matrix.outputs.matrix.os }}
+        language: ${{ steps.get_matrix.outputs.matrix.language }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build on ${{ matrix.os }} with ${{ matrix.language }}
+        run: echo "Building on ${{ matrix.os }} with ${{ matrix.language }}"
+
+  get_matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.parse_matrix.outputs.matrix }}
+    steps:
+      - name: Parse matrix file
+        run: |
+          matrix=()
+          while IFS= read -r line; do
+            matrix+=("$line")
+          done < matrix.txt
+          echo "::set-output name=matrix::${matrix[*]}"
+        shell: bash
+        id: parse_matrix

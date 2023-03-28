@@ -1,0 +1,3 @@
+os=ubuntu-latest,language=python
+os=windows-latest,language=node
+os=macos-latest,language=java
