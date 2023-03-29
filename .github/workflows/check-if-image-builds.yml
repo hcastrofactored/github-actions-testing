@@ -15,14 +15,13 @@ jobs:
     
       - name: Checkout code
         uses: actions/checkout@v3
-          with:
-            fetch-depth: 2
+        with:
+          fetch-depth: 2
       
       - name: Check if docker image builds
         id: dockerfile-changes
-        
         run: |
-        
+
           git diff --diff-filter=ACM  --name-only HEAD^ HEAD |  grep docker-images  | awk -F / '{print $(NF-1)}' | sort -u  > dockerfiles.txt
 
           for dockerfile in $(cat dockerfiles.txt); do
