@@ -20,10 +20,11 @@ jobs:
       
       - name: Check if docker image builds
         id: dockerfile-changes
+        
         run: |
 
-          git diff --diff-filter=ACM  --name-only HEAD^ HEAD |  grep docker-images  | awk -F / '{print $(NF-1)}' | sort -u  > dockerfiles.txt
-
+          git diff --diff-filter=ACM  --name-only HEAD^ HEAD |  grep docker-images | while read file; do echo "${file%/*}"; done | uniq  > dockerfiles.txt
+          
           for dockerfile in $(cat dockerfiles.txt); do
                 docker build -t latest $dockerfile
           done
