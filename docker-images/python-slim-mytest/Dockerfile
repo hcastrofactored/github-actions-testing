@@ -1,3 +1,4 @@
+# Slim Python test
 FROM python:3.9-alpine
 
 COPY requirements.txt /requirements.txt
