@@ -11,7 +11,7 @@ env:
   ECR_REPOSITORY:  ${{ secrets.ECR_REPOSITORY }}
 
 jobs:
-  deploy:
+  deploy-ecr:
     runs-on: ubuntu-latest
     environment: DEV
     steps:
