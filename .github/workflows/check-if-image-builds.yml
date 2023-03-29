@@ -4,24 +4,27 @@ on:
   pull_request:
     branches:
       - '*'
-
     paths:
       - 'docker-images/**'  
 
-   - name: Checkout code
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: DEV
+    steps:
+    
+      - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-
-    - name: Check if docker image builds
-      id: dockerfile-changes
-
-      run: |
+          with:
+            fetch-depth: 2
+      
+      - name: Check if docker image builds
+        id: dockerfile-changes
         
-        git diff --diff-filter=ACM  --name-only HEAD^ HEAD |  grep docker-images  | awk -F / '{print $(NF-1)}' | sort -u  > dockerfiles.txt
+        run: |
+        
+          git diff --diff-filter=ACM  --name-only HEAD^ HEAD |  grep docker-images  | awk -F / '{print $(NF-1)}' | sort -u  > dockerfiles.txt
 
-        for dockerfile in $(cat dockerfiles.txt); do
-
-          docker build -t latest $dockerfile
-
-        done
+          for dockerfile in $(cat dockerfiles.txt); do
+                docker build -t latest $dockerfile
+          done
