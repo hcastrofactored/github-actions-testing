@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'docker-images/**'
-  
+      - 'docker-images/**'  
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY:  ${{ secrets.ECR_REPOSITORY }}
@@ -39,7 +38,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           
-          git diff --name-only HEAD^ HEAD | xargs -0 dirname | sort -u | grep docker-images  > dockerfiles.txt
+          git diff --diff-filter=ACM  --name-only HEAD^ HEAD |  grep docker-images  | awk -F / '{print $(NF-1)}' | sort -u  > dockerfiles.txt
 
           cat dockerfiles.txt
 
@@ -51,14 +50,15 @@ jobs:
 
             if (aws ecr describe-images --repository-name=$IMAGE_NAME  2> /dev/null); then
 
-              LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[? starts_with(imageTags[0], `v`)].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
+              LAST_TAG=$(aws ecr describe-images --filter "tagStatus=TAGGED" --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[? starts_with(imageTags[0], `v`)].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
+              LAST_TAG=$(echo $LAST_TAG | cut -dv -f2)
+              NEW_TAG=$((LAST_TAG+1))
+              NEW_TAG=$(echo v$NEW_TAG)
 
-              NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
-              
             else
 
               aws ecr create-repository --repository-name $IMAGE_NAME
-              NEW_TAG=v0.1
+              NEW_TAG=v1
               
             fi
 

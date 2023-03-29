@@ -1,0 +1,85 @@
+name: Deploy Multiple Dockerfile to ECR
+
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker-images/**'
+  
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY:  ${{ secrets.ECR_REPOSITORY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: DEV
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get Dockerfile changes, tag and push images
+        id: dockerfile-changes
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          
+          git diff --name-only HEAD^ HEAD | xargs -0 dirname | sort -u | grep docker-images  > dockerfiles.txt
+          
+          docker buildx create --use --driver=docker-container
+          export ACTIONS_CACHE_URL=$(echo "$ACTIONS_ID_TOKEN_REQUEST_URL" | grep -Po 'https://[^/]+/[^/]+/' | sed  's/pipelines/artifactcache/')
+          export ACTIONS_RUNTIME_TOKEN=$ACTIONS_ID_TOKEN_REQUEST_TOKEN
+
+          cat dockerfiles.txt 
+
+          for dockerfile in $(cat dockerfiles.txt); do
+
+            echo $dockerfile 
+
+            IMAGE_NAME=$(echo $dockerfile | awk -F "/" '{print $(NF)}')
+
+            if (aws ecr describe-images --repository-name=$IMAGE_NAME  2> /dev/null); then
+
+              LAST_TAG=$(aws ecr describe-images --repository-name $IMAGE_NAME --query 'sort_by(imageDetails,& imagePushedAt)[? starts_with(imageTags[0], `v`)].imageTags[0]' --output yaml | tail -n 1 | awk -F'- ' '{print $2}')
+
+              echo $LAST_TAG
+
+              NEW_TAG=$(./.github/scripts/bump-version.sh $LAST_TAG)
+              
+            else
+
+              aws ecr create-repository --repository-name $IMAGE_NAME
+              NEW_TAG=v0.1
+              
+            fi
+
+            echo $IMAGE_NAME 
+            echo $NEW_TAG 
+
+            docker buildx build -t "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG" -t "$ECR_REGISTRY/$IMAGE_NAME:latest" \
+            --cache-to type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME \
+            --cache-from type=gha,scope=$GITHUB_REF_NAME-$IMAGE_NAME \
+            --push 
+            $dockerfile
+
+            # Push the Docker image to the registry
+            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:$NEW_TAG"
+            docker buildx push "$ECR_REGISTRY/$IMAGE_NAME:latest"
+
+          done
