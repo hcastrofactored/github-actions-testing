@@ -29,9 +29,8 @@ jobs:
       - name: Run Flake8
         id: flake8
         run: |
-          flake8  . > result_flake.txt
-      
-      
+          flake8  . head -n 2  > result_flake.txt
+
       - uses: actions/github-script@v5
         if: ${{ failure() }}
         with:
