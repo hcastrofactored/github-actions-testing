@@ -1,0 +1,53 @@
+name: Linting project
+
+# This workflow will kick off whenever there is a PR but won't prevent from merging in case it fails.
+on: 
+  pull_request:
+    branches:
+      - main 
+
+jobs: 
+  lint: 
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      id-token: write
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+            python-version: '3.7'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-cov
+      
+      - name: Run Flake8
+        id: flake8
+        run: |
+          flake8  . > result_flake.txt
+      
+      
+      - name: Parse flake output into env var
+        id: parse
+        if: ${{ failure() }}
+        run: |
+          echo "BODY_CONTENT=$(cat result_flake.txt)" >> $GITHUB_ENV
+
+      - uses: actions/github-script@v5
+        if: ${{ failure() }}
+        with:
+          script: |
+            const { BODY_CONTENT } = process.env
+            const body = ['Lint has failed:', ...BODY_CONTENT.split('\n')].join('\n')
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
