@@ -31,9 +31,9 @@ jobs:
         run: |
 
           if ! flake8 .; then
-            echo "::set-output name=exit_status::1"
+            echo "exit_status=1" >> $GITHUB_ENV
           else
-            echo "::set-output name=exit_status::0"
+            echo "exit_status=0" >> $GITHUB_ENV
           fi
 
           flake8 --exit-zero . > result_flake.txt
