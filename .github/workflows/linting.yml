@@ -22,12 +22,10 @@ jobs:
           pip install flake8
 
       - name: Lint code
-        id: lint
         run: |
           flake8 . > lint.txt || true
           exit_status=$?
           echo "::set-output name=exit_status::$exit_status"
-          echo "::set-output name=lint_output::$(cat lint.txt)"
 
       - name: Comment on pull request
         uses: actions/github-script@v5
@@ -35,9 +33,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require('fs');
             const exitStatus = parseInt('${{ steps.lint.outputs.exit_status }}');
             if (exitStatus !== 0) {
-              const lintOutput = '${{ steps.lint.outputs.lint_output }}';
+              const lintOutput = fs.readFileSync('lint.txt', 'utf8');
               const context = github.context;
               const { owner, repo, number } = context.issue;
               github.issues.createComment({
