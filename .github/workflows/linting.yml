@@ -47,7 +47,7 @@ jobs:
         with:
           script: |
             const { BODY_CONTENT } = process.env
-            const body = ['Lint has failed:', ...BODY_CONTENT.split('\n')].join('\n')
+            const body = 'Lint has failed:\n' + BODY_CONTENT.replace(/\n/g, '\n> ')
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
