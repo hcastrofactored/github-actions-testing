@@ -37,7 +37,7 @@ jobs:
         id: parse
         if: ${{ failure() }}
         run: |
-          BODY_CONTENT="$(cat result_flake.txt | tr '\n' '\\\n')"
+          BODY_CONTENT="\"$(cat result_flake.txt)\""
           echo "BODY_CONTENT<<EOF" >> $GITHUB_ENV
           echo $BODY_CONTENT >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -46,8 +46,8 @@ jobs:
         if: ${{ failure() }}
         with:
           script: |
-            const fs = require('fs');
-            const body = ['Lint has failed:', fs.readFileSync('body.txt', 'utf8')].join('\n');
+            const { BODY_CONTENT } = process.env
+            const body = 'Lint has failed:\n' + BODY_CONTENT.replace(/\n/g, '\n> ')
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -56,4 +56,4 @@ jobs:
               headers: {
                 'Content-Type': 'application/json'
               }
-            });
+            })
