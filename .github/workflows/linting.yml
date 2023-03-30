@@ -37,7 +37,7 @@ jobs:
         id: parse
         if: ${{ failure() }}
         run: |
-          echo "BODY_CONTENT=$(cat result_flake.txt)" >> $GITHUB_ENV
+          echo "BODY_CONTENT=\"$(cat result_flake.txt)\"" >> $GITHUB_ENV
 
       - uses: actions/github-script@v5
         if: ${{ failure() }}
