@@ -46,8 +46,8 @@ jobs:
         if: ${{ failure() }}
         with:
           script: |
-            const { BODY_CONTENT } = process.env
-            const body = ['Lint has failed:', ...BODY_CONTENT.split('\\\\n')].join('\n')
+            const fs = require('fs');
+            const body = ['Lint has failed:', fs.readFileSync('body.txt', 'utf8')].join('\n');
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -56,4 +56,4 @@ jobs:
               headers: {
                 'Content-Type': 'application/json'
               }
-            })
+            });
