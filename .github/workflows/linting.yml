@@ -1,48 +1,47 @@
-name: Lint Python Code
+name: Linting project
 
-on:
+# This workflow will kick off whenever there is a PR but won't prevent from merging in case it fails.
+on: 
   pull_request:
-    branches: [main]
+    branches:
+      - main 
 
-jobs:
-  lint:
+jobs: 
+  lint: 
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    permissions:
+      pull-requests: write
+      contents: read
+      id-token: write
+    continue-on-error: true
 
+    steps:
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.x
+            python-version: '3.7'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8
-
-      - name: Lint code
+          pip install flake8 pytest pytest-cov
+      
+      - name: Run Flake8
+        id: flake8
         run: |
-          flake8 . > lint.txt || true
-          exit_status=$?
-          echo "::set-output name=exit_status::$exit_status"
-
-      - name: Comment on pull request
-        uses: actions/github-script@v5
-        if: always()
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const exitStatus = parseInt('${{ steps.lint.outputs.exit_status }}');
-            if (exitStatus !== 0) {
-              const lintOutput = fs.readFileSync('lint.txt', 'utf8');
-              const context = github.context;
-              const { owner, repo, number } = context.issue;
-              github.issues.createComment({
-                owner,
-                repo,
-                issue_number: number,
-                body: `The code did not pass flake8 linting. Please fix the issues before merging.\n\n\`\`\`\n${lintOutput}\n\`\`\`\n`,
-              });
-            }
+          flake8  . > result_flake.txt
+      
+      
+    - uses: actions/github-script@v5
+      if: ${{ failure() }}
+      with:
+        script: |
+          const fs = require('fs');
+          const bodyLint = fs.readFileSync('result_flake.txt', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body:  `The code did not pass flake8 linting. Please fix the issues before merging.\n\n\`\`\`\n${bodyLint}\n\`\`\`\n`,
+          });
