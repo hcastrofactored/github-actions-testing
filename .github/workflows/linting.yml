@@ -37,19 +37,15 @@ jobs:
         id: parse
         if: ${{ failure() }}
         run: |
-          echo "BODY_CONTENT=\"$(cat result_flake.txt)\"" >> $GITHUB_ENV
+          echo "BODY_CONTENT=$(cat result_flake.txt)" >> $GITHUB_ENV
 
       - uses: actions/github-script@v5
         if: ${{ failure() }}
         with:
           script: |
-            const { BODY_CONTENT } = process.env
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `
-                    Lint has failed:
-                    ${BODY_CONTENT}
-                    `
+              body: process.env.BODY_CONTENT
             })
