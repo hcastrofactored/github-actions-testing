@@ -43,6 +43,7 @@ jobs:
         if: ${{ always() }}
         with:
           script: |
+            const {exitStatus} = process.env
             const fs = require("fs");
             const bodyLint = fs.readFileSync("result_flake.txt", "utf8");
             if (exitStatus !== 0) {
