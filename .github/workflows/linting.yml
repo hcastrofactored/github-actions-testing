@@ -1,10 +1,9 @@
 name: Linting project
 
 # This workflow will kick off whenever there is a PR but won't prevent from merging in case it fails.
-on: 
+on:
   pull_request:
-    branches:
-      - main 
+    branches: [main]
 
 jobs: 
   lint: 
@@ -33,15 +32,15 @@ jobs:
           flake8  . > result_flake.txt
       
       
-    - uses: actions/github-script@v5
-      if: ${{ failure() }}
-      with:
-        script: |
-          const fs = require('fs');
-          const bodyLint = fs.readFileSync('result_flake.txt', 'utf8');
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body:  `The code did not pass flake8 linting. Please fix the issues before merging.\n\n\`\`\`\n${bodyLint}\n\`\`\`\n`,
-          });
+      - uses: actions/github-script@v5
+        if: ${{ failure() }}
+        with:
+          script: |
+            const fs = require("fs");
+            const bodyLint = fs.readFileSync("result_flake.txt", "utf8");
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body:  `The code did not pass flake8 linting. Please fix the issues before merging.\n\n\`\`\`\n${bodyLint}\n\`\`\`\n`,
+            });
