@@ -33,27 +33,24 @@ jobs:
           flake8  . > result_flake.txt
       
       
-      - name: Parse flake output into env var
-        id: parse
-        if: ${{ failure() }}
-        run: |
-          BODY_CONTENT="\"$(cat result_flake.txt)\""
-          echo "BODY_CONTENT<<EOF" >> $GITHUB_ENV
-          echo $BODY_CONTENT >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+    - name: Parse flake output into file
+      id: parse
+      if: ${{ failure() }}
+      run: |
+        printf %s "$(cat result_flake.txt)" | tr '\n' '\\\n' > body.txt
 
-      - uses: actions/github-script@v5
-        if: ${{ failure() }}
-        with:
-          script: |
-            const { BODY_CONTENT } = process.env
-            const body = 'Lint has failed:\n' + BODY_CONTENT.replace(/\n/g, '\n> ')
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body,
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            })
+    - uses: actions/github-script@v5
+      if: ${{ failure() }}
+      with:
+        script: |
+          const fs = require('fs');
+          const body = ['Lint has failed:', fs.readFileSync('body.txt', 'utf8').replace(/\\\\n/g, '\n')].join('\n');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
