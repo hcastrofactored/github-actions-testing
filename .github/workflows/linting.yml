@@ -33,18 +33,12 @@ jobs:
           flake8  . > result_flake.txt
       
       
-    - name: Parse flake output into file
-      id: parse
-      if: ${{ failure() }}
-      run: |
-        printf %s "$(cat result_flake.txt)" | tr '\n' '\\\n' > body.txt
-
     - uses: actions/github-script@v5
       if: ${{ failure() }}
       with:
         script: |
           const fs = require('fs');
-          const body = ['Lint has failed:', fs.readFileSync('body.txt', 'utf8').replace(/\\\\n/g, '\n')].join('\n');
+          const body = ['Lint has failed:', fs.readFileSync('result_flake.txt', 'utf8')];
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
