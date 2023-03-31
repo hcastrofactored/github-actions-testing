@@ -5,10 +5,6 @@ on:
   pull_request:
     branches: [main]
 
-
-name: flake8 Lint
-
-
 jobs:
   lint:
     runs-on: ubuntu-latest
