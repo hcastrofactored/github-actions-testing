@@ -5,52 +5,27 @@ on:
   pull_request:
     branches: [main]
 
-jobs: 
-  lint: 
+
+name: flake8 Lint
+
+
+jobs:
+  lint:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
-      id-token: write
-    continue-on-error: true
-
+    name: Lint
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Check out source repository
+        uses: actions/checkout@v2
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
         with:
-            python-version: '3.7'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest pytest-cov
-      
-      - name: Run Flake8
-        id: flake8
-        run: |
-
-          if ! flake8 .; then
-            echo "exit_status=1" >> $GITHUB_ENV
-          else
-            echo "exit_status=0" >> $GITHUB_ENV
-          fi
-
-          flake8 --exit-zero . > result_flake.txt
-          
-
-      - uses: actions/github-script@v5
-        if: ${{ always() }}
+          python-version: "3.8"
+      # Install specific flake8 version (this step is not required. Default is "latest").
+      - run: pip install flake8==6.0.0
+      # Install flake8 extensions (this step is not required. Default is "None").
+      - run: pip install flake8-docstrings flake8-simplify flake8-unused-arguments flake8-quotes
+      - name: flake8 Lint
+        uses: reviewdog/action-flake8@v3
         with:
-          script: |
-            const {exitStatus} = process.env
-            const fs = require("fs");
-            const bodyLint = fs.readFileSync("result_flake.txt", "utf8");
-            if (exitStatus !== 0) {
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body:  `The code did not pass flake8 linting. Please fix the issues before merging.\n\n\`\`\`\n${bodyLint}\n\`\`\`\n`,
-              });
-            }
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
