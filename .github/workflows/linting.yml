@@ -1,53 +1,27 @@
 name: Linting project
 
 # This workflow will kick off whenever there is a PR but won't prevent from merging in case it fails.
-on: 
+on:
   pull_request:
-    branches:
-      - main 
+    branches: [main]
 
-jobs: 
-  lint: 
+jobs:
+  lint:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
-      id-token: write
-    continue-on-error: true
-
+    name: Lint
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Check out source repository
+        uses: actions/checkout@v2
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
         with:
-            python-version: '3.7'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest pytest-cov
-      
-      - name: Run Flake8
-        id: flake8
-        run: |
-          flake8  . > result_flake.txt
-      
-      
-      - name: Parse flake output into env var
-        id: parse
-        if: ${{ failure() }}
-        run: |
-          echo "BODY_CONTENT=$(cat result_flake.txt)" >> $GITHUB_ENV
-
-      - uses: actions/github-script@v5
-        if: ${{ failure() }}
+          python-version: "3.8"
+      # Install specific flake8 version (this step is not required. Default is "latest").
+      - run: pip install flake8==6.0.0
+      # Install flake8 extensions (this step is not required. Default is "None").
+      - run: pip install flake8-docstrings flake8-simplify flake8-unused-arguments flake8-quotes
+      - name: flake8 Lint
+        uses: reviewdog/action-flake8@v3
         with:
-          script: |
-            const { BODY_CONTENT } = process.env
-            const body = ['Lint has failed:', ...BODY_CONTENT.split('\n')].join('\n')
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            })
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
